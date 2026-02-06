@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Users, PieChart, Filter, Search, PlusCircle, Menu, X, Settings, HelpCircle, Zap } from 'lucide-react';
 import { Button } from '../../components/ui/Button';
@@ -18,7 +18,25 @@ export const InvestorDashboard: React.FC = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedIndustries, setSelectedIndustries] = useState<string[]>([]);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  
+  const menuRef = useRef<HTMLDivElement>(null);
+
+  // Close menu when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event: MouseEvent) => {
+      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
+        setMobileMenuOpen(false);
+      }
+    };
+
+    if (mobileMenuOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [mobileMenuOpen]);
+
   if (!user) return null;
   
   // Get collaboration requests sent by this investor
@@ -82,47 +100,49 @@ export const InvestorDashboard: React.FC = () => {
       </div>
 
       {/* Mobile menu */}
-      {mobileMenuOpen && (
-        <Card className="md:hidden bg-gray-50">
-          <CardBody className="space-y-3">
-            <Link to="/entrepreneurs" onClick={() => setMobileMenuOpen(false)}>
-              <Button fullWidth leftIcon={<PlusCircle size={18} />}>
-                View All Startups
-              </Button>
-            </Link>
-            
-            <Link to="/features" onClick={() => setMobileMenuOpen(false)}>
-              <Button 
-                fullWidth 
-                variant="outline" 
-                leftIcon={<Zap size={18} />}
-              >
-                Features
-              </Button>
-            </Link>
-            
-            <Link to="/settings" onClick={() => setMobileMenuOpen(false)}>
-              <Button 
-                fullWidth 
-                variant="outline" 
-                leftIcon={<Settings size={18} />}
-              >
-                Settings
-              </Button>
-            </Link>
-            
-            <Link to="/help" onClick={() => setMobileMenuOpen(false)}>
-              <Button 
-                fullWidth 
-                variant="outline" 
-                leftIcon={<HelpCircle size={18} />}
-              >
-                Need Assistance
-              </Button>
-            </Link>
-          </CardBody>
-        </Card>
-      )}
+      <div ref={menuRef}>
+        {mobileMenuOpen && (
+          <Card className="md:hidden bg-gray-50 sticky top-0 z-50">
+            <CardBody className="space-y-3">
+              <Link to="/entrepreneurs" onClick={() => setMobileMenuOpen(false)}>
+                <Button fullWidth leftIcon={<PlusCircle size={18} />}>
+                  View All Startups
+                </Button>
+              </Link>
+              
+              <Link to="/features" onClick={() => setMobileMenuOpen(false)}>
+                <Button 
+                  fullWidth 
+                  variant="outline" 
+                  leftIcon={<Zap size={18} />}
+                >
+                  Features
+                </Button>
+              </Link>
+              
+              <Link to="/settings" onClick={() => setMobileMenuOpen(false)}>
+                <Button 
+                  fullWidth 
+                  variant="outline" 
+                  leftIcon={<Settings size={18} />}
+                >
+                  Settings
+                </Button>
+              </Link>
+              
+              <Link to="/help" onClick={() => setMobileMenuOpen(false)}>
+                <Button 
+                  fullWidth 
+                  variant="outline" 
+                  leftIcon={<HelpCircle size={18} />}
+                >
+                  Need Assistance
+                </Button>
+              </Link>
+            </CardBody>
+          </Card>
+        )}
+      </div>
       
       {/* Confirmed Meetings */}
       <ConfirmedMeetingsCard meetings={mockMeetings} />
